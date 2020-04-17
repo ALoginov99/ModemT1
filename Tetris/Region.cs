@@ -73,7 +73,7 @@ namespace Tetris
                 Console.WriteLine();
             }
             Console.SetCursorPosition(Width + 3, 0);
-            Console.Write(Points);
+            Console.Write("Счёт: {0}",Points);
 
         }
         /// <summary>

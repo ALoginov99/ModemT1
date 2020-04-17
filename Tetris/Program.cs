@@ -56,6 +56,8 @@ namespace Tetris
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 mutex.WaitOne();
+                if (!check)
+                    break;
                 int posX = Figure.PosX;
                 int posY = Figure.PosY;
                 Figure.Clear();
@@ -72,7 +74,7 @@ namespace Tetris
                         break;
                     case (ConsoleKey.Spacebar):
                         Figure figure = Figure.Rotation();
-                        if (Region.CheckFigure(Figure))
+                        if (Region.CheckFigure(figure))
                         {
                             Figure = figure;
                         }
@@ -110,6 +112,7 @@ namespace Tetris
                     check = false;
                     Console.Clear();
                     Console.WriteLine("Игра окончена, ваш счет:{0}",Region.Points);
+                    mutex.ReleaseMutex();
                     break;
                 }
                 Figure.Clear();
