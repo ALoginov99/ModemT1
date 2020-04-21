@@ -29,7 +29,7 @@ namespace Tetris
             int.TryParse(Console.ReadLine(), out heigth);
             Console.Write("Скорость падения фигур(клеток в минуту)->");
             int.TryParse(Console.ReadLine(), out timeSleep);
-            TimeSleep = timeSleep*1000/60;
+            TimeSleep = 60*1000/timeSleep;
             Region = new Region(width, heigth);
         }
 
