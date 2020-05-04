@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Tetris
 {
     class Program
     {
-        static Mutex mutex = new Mutex();
+        static Highscores Highscores = new Highscores();
+
+        static Mutex Mutex = new Mutex();
         static Figure Figure = new Figure();
         static Region Region;
         static int TimeSleep = 1000;
@@ -18,6 +21,12 @@ namespace Tetris
         {
             Console.CursorVisible = false;
 
+            Console.WriteLine("Рекорды");
+            Highscores.Print();
+            Console.WriteLine("Нажмите для продолжения");
+            Console.ReadKey();
+            Console.Clear();
+
             Console.WriteLine("Добро пожаловать в игру тетрис!!");
             Console.WriteLine("Перед началом прочитайте правила и введите параметры игры");
             Console.WriteLine("Управление осуществляется клавишами 'стрелка влево','стелка вправо','стрелка вниз'");
@@ -29,6 +38,7 @@ namespace Tetris
             int.TryParse(Console.ReadLine(), out heigth);
             Console.Write("Скорость падения фигур(клеток в минуту)->");
             int.TryParse(Console.ReadLine(), out timeSleep);
+            Console.Clear();
             TimeSleep = 60*1000/timeSleep;
             Region = new Region(width, heigth);
         }
@@ -38,14 +48,18 @@ namespace Tetris
             Initial();
 
             Region.Draw();
+            Region.DrawBorder();
             Figure.Draw();
 
-            Thread threadPlay = new Thread(Play);
-            threadPlay.Start();
-            Thread threadDown = new Thread(Down);
-            threadDown.Start();
+            Task taskPlay = new Task(Play);
+            taskPlay.Start();
+            Task taskDown = new Task(Down);
+            taskDown.Start();
 
-            Console.ReadKey();
+            taskPlay.Wait();
+            taskDown.Wait();
+
+            SetHighscores();
         }
         /// <summary>
         /// keystroke tracking method
@@ -55,29 +69,23 @@ namespace Tetris
             while (check)
             {
                 ConsoleKeyInfo key = Console.ReadKey(true);
-                mutex.WaitOne();
+                Mutex.WaitOne();
                 if (!check)
                     break;
-                int posX = Figure.PosX;
-                int posY = Figure.PosY;
-                Figure.Clear();
+                Figure figure = (Figure)Figure.Clone();
                 switch (key.Key)
                 {
                     case (ConsoleKey.RightArrow):
-                        Figure.PosX += 1;
+                        figure.PosX += 1;
                         break;
                     case (ConsoleKey.LeftArrow):
-                        Figure.PosX -= 1;
+                        figure.PosX -= 1;
                         break;
                     case (ConsoleKey.DownArrow):
-                        Figure.PosY += 1;
+                        figure.PosY += 1;
                         break;
                     case (ConsoleKey.Spacebar):
-                        Figure figure = Figure.Rotation();
-                        if (Region.CheckFigure(figure))
-                        {
-                            Figure = figure;
-                        }
+                        figure = figure.Rotation();
                         break;
                     case (ConsoleKey.Escape):
                         check = false;
@@ -86,16 +94,13 @@ namespace Tetris
                         break;
                 }
                 //rollback changes if necessary
-                if (!Region.CheckFigure(Figure))
+                if (Region.CheckFigure(figure))
                 {
-                    Figure.PosX = posX;
-                    Figure.PosY = posY;
-                }
-                else
-                {
+                    Figure.Clear();
+                    Figure = figure;
                     Figure.Draw();
                 }
-                mutex.ReleaseMutex();
+                Mutex.ReleaseMutex();
             }
         }
         /// <summary>
@@ -106,13 +111,13 @@ namespace Tetris
             while (check)
             {
                 Thread.Sleep(TimeSleep);
-                mutex.WaitOne();
+                Mutex.WaitOne();
                 if (!Region.CheckFigure(Figure))
                 {
                     check = false;
                     Console.Clear();
                     Console.WriteLine("Игра окончена, ваш счет:{0}",Region.Points);
-                    mutex.ReleaseMutex();
+                    Mutex.ReleaseMutex();
                     break;
                 }
                 Figure.Clear();
@@ -133,7 +138,17 @@ namespace Tetris
                     Figure.Reset();
                 }
                 Figure.Draw();
-                mutex.ReleaseMutex();
+                Mutex.ReleaseMutex();
+            }
+        }
+
+        static void SetHighscores()
+        {
+            if(Highscores.CheckIsTop10(Region.Points))
+            {
+                Console.WriteLine("Поздравляем!!! Вы попали в топ 10 лучших игроков данного тетриса, пожалуйста введите свое имя");
+                string name = Console.ReadLine();
+                Highscores.AddInTop10(name,Region.Points);
             }
         }
     }

@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Linq;
 
 namespace Tetris
 {
     /// <summary>
     /// game figure class
     /// </summary>
-    public class Figure
+    public class Figure : ICloneable
     {
         public int[,] Field;
         public int Width = 0;
@@ -35,24 +34,20 @@ namespace Tetris
         public int[,] RandomFigure()
         {
             Random r = new Random(DateTime.Now.Millisecond);
-            int[] random = new int[4];
-            for (int i = 0; i < 4; i++)
+            int[,] field = new int[,] { };
+            switch (r.Next(7))
             {
-                random[i] = r.Next(2);
+                case 0: field = new int[,] { { 1, 1, 1, 1 } }; break;//I
+                case 1: field = new int[,] { { 1, 1, 1 }, { 1, 0, 0 } }; break;//L
+                case 2: field = new int[,] { { 1, 0, 0 }, { 1, 1, 1 } }; break;//J
+                case 3: field = new int[,] { { 1, 1 }, { 1, 1 } }; break;//O
+                case 4: field = new int[,] { { 0, 1, 1 }, { 1, 1, 0 } }; break;//S
+                case 5: field = new int[,] { { 1, 1, 0 }, { 0, 1, 1 } }; break;//z
+                case 6: field = new int[,] { { 0, 1, 0 }, { 1, 1, 1 } }; break;//z
             }
-            Width = random.Sum() + 1;
-            Height = 6 - Width;
-            int[,] figure = new int[Height, Width];
-            int x = 0, y = 0;
-            for (int i = 0; i < 4; i++)
-            {
-                if (random[i] == 0)
-                    figure[x++, y] = 1;
-                else
-                    figure[x, y++] = 1;
-            }
-            figure[x, y] = 1;
-            return figure;
+            Height = field.GetLength(0);
+            Width = field.GetLength(1);
+            return field;
         }
 
         /// <summary>
@@ -99,6 +94,18 @@ namespace Tetris
             figure.PosY = PosY;
 
             return figure;
+        }
+
+        public object Clone()
+        {
+            return new Figure()
+            {
+                Field = this.Field,
+                Width = this.Width,
+                Height = this.Height,
+                PosX = this.PosX,
+                PosY = this.PosY
+            };
         }
     }
 }

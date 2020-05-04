@@ -55,25 +55,33 @@ namespace Tetris
                         Field[figure.PosY + i][figure.PosX + j] = figure.Field[i, j];
                     }
         }
+        public void DrawBorder()
+        {
+            for (int i = 0; i < Height; i++)
+            {
+                Console.SetCursorPosition(0, i);
+                Console.Write('|');
+                Console.SetCursorPosition(Width + 1, i);
+                Console.Write('|');
+            }
+        }
 
         /// <summary>
         /// display on console
         /// </summary>
         public void Draw()
         {
-            Console.Clear();
             for (int i = 0; i < Height; i++)
             {
-                Console.Write('|');
+                Console.SetCursorPosition(1, i);
                 for (int j = 0; j < Width; j++)
                 {
                     Console.Write(Field[i][j] == 1 ? '*' : ' ');
                 }
-                Console.Write('|');
                 Console.WriteLine();
             }
             Console.SetCursorPosition(Width + 3, 0);
-            Console.Write("Счёт: {0}",Points);
+            Console.Write("Счёт: {0}", Points);
 
         }
         /// <summary>
